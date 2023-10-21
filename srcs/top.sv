@@ -33,7 +33,12 @@ module top(
     wire pri_max, sec_max;
     wire [15:0] sec_count;
 
-    RO testRO(sw[15], osc);
+    //RO testRO(sw[15], osc);
+    RO_configurable RO_0(sw[15], 3'b0, 3'b0, osc);
+    //      module RO_configurable(
+    //       input enable, [2:0]sel, [2:0]bx,
+    //       output flipper
+    //      );
     counter #(.max(Max_PRI)) priCounter (.up(osc), .rst(sw[14]), .at_max(pri_max));
     counter #(.max(Max_SSEG)) secCounter (.up(pri_max), .rst(sw[14]), .count(sec_count), .at_max(sec_max));
     

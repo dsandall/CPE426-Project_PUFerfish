@@ -1,5 +1,13 @@
 ## Enable Security Wizardry
-set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets testRO/a]
+set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets RO_0/slice0/muxB_NL]
+set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets RO_1/slice0/muxB_NL]
+set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets RO_2/slice0/muxB_NL]
+set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets RO_3/slice0/muxB_NL]
+set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets RO_4/slice0/muxB_NL]
+set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets RO_5/slice0/muxB_NL]
+set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets RO_6/slice0/muxB_NL]
+set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets RO_7/slice0/muxB_NL]
+set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets RO_8/slice0/muxB_NL]
 
 ## Switches
 set_property PACKAGE_PIN V17 [get_ports {sw[0]}]
