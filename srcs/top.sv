@@ -27,14 +27,16 @@ module top(
     output [3:0]an,
     output [7:0]segs //there are actually 8 cathodes. one is disabled (decimal pt.)
     );
-    parameter Max_PRI = 150000;
+    parameter Max_PRI = 5;
     parameter Max_SSEG = 9999;
+    parameter Max_Timer = 1000;
     reg ledToggle;
     wire pri_max, sec_max;
     wire [15:0] sec_count;
+    reg enable = sw[15] & !timer_max;
 
     //RO testRO(sw[15], osc);
-    RO_configurable RO_0(sw[15], 3'b0, 3'b0, osc);
+    RO_configurable RO_0(enable, sw[5:3], sw[2:0], osc);
     //      module RO_configurable(
     //       input enable, [2:0]sel, [2:0]bx,
     //       output flipper
@@ -42,6 +44,8 @@ module top(
     counter #(.max(Max_PRI)) priCounter (.up(osc), .rst(sw[14]), .at_max(pri_max));
     counter #(.max(Max_SSEG)) secCounter (.up(pri_max), .rst(sw[14]), .count(sec_count), .at_max(sec_max));
     
+    counter #(.max(Max_Timer), .autoreset(0)) timerCounter (.up(CLK), .rst(sw[14]), .at_max(timer_max)); //clock timer - consistent, ensures that each RO (and each config is measured for the same amount of time
+
     //toggle the LED when secondary counter reaches max
     initial begin ledToggle <=0; end
     always @(posedge sec_max) ledToggle = ~ledToggle;
