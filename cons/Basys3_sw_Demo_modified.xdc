@@ -1,14 +1,27 @@
 ## Enable Security Wizardry
-set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets RO_0/slice0/muxB_NL]
-set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets RO_1/slice0/muxB_NL]
-set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets RO_2/slice0/muxB_NL]
-set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets RO_3/slice0/muxB_NL]
-set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets RO_4/slice0/muxB_NL]
-set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets RO_5/slice0/muxB_NL]
-set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets RO_6/slice0/muxB_NL]
-set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets RO_7/slice0/muxB_NL]
-set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets RO_8/slice0/muxB_NL]
+set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets RO_0/RO/slice0/muxA]
+set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets RO_1/RO/slice0/muxA]
+set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets RO_2/RO/slice0/muxA]
+set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets RO_3/RO/slice0/muxA]
+set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets RO_4/RO/slice0/muxA]
+set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets RO_5/RO/slice0/muxA]
+set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets RO_6/RO/slice0/muxA]
+set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets RO_7/RO/slice0/muxA]
+set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets RO_8/RO/slice0/muxA]
 
+
+##Buttons
+set_property PACKAGE_PIN U18 [get_ports BTNC]
+	set_property IOSTANDARD LVCMOS33 [get_ports BTNC]
+#set_property PACKAGE_PIN T18 [get_ports btnU]
+	#set_property IOSTANDARD LVCMOS33 [get_ports btnU]
+#set_property PACKAGE_PIN W19 [get_ports BTNL]
+	#set_property IOSTANDARD LVCMOS33 [get_ports BTNL]
+#set_property PACKAGE_PIN T17 [get_ports btnR]
+	#set_property IOSTANDARD LVCMOS33 [get_ports btnR]
+#set_property PACKAGE_PIN U17 [get_ports btnD]
+	#set_property IOSTANDARD LVCMOS33 [get_ports btnD]
+	
 ## Switches
 set_property PACKAGE_PIN V17 [get_ports {sw[0]}]
 set_property IOSTANDARD LVCMOS33 [get_ports {sw[0]}]
@@ -81,7 +94,7 @@ set_property IOSTANDARD LVCMOS33 [get_ports {led[15]}]
 ## Clock signal
 set_property PACKAGE_PIN W5 [get_ports CLK]
 	set_property IOSTANDARD LVCMOS33 [get_ports CLK]
-	create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports CLK]
+	##create_clock -add -name sys_clk_pin -period 50.00 -waveform {0 5} [get_ports CLK]
 	
 #7 segment display
 # seg[7], seg[6]... seg[0] is a, b...  dp
