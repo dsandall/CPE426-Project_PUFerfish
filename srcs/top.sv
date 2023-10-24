@@ -18,35 +18,22 @@
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
-module RO_withCounter (input enable, reset, [2:0]sel, [2:0]bx, output [15:0] count);
-    //we put the counter inside the RO module, to simplify the controls design outside the module
-    //a shortcut, yes, but a worthy one
-    
-    parameter Max_PRI = 4096; //increase to reduce sensitivity and jitters - this seems to be ok, but we have not tested different temperatures
-    parameter Max_SSEG = 16'hFFFF; //hard max, if you want to display the count on the SSEG. could be lower, but why?
-    
-    // at  bx = sel = 0, and 150k x 5k cycles, it takes 5.5 seconds to toggle LED - this puts RO frequency at ~135 MHz
-    RO_configurable RO(enable, sel, bx, osc);
-    
-    //RO testRO(sw[15], osc); //old simple RO. for loserz only 
-    counter #(.max(Max_PRI)) priCounter (.up(osc), .rst(reset), .at_max(pri_max)); //initial clock divider - higher numbers will "smooth out" jitters, while lower numbers will increase sensitivity to RO differences
-    counter #(.max(Max_SSEG)) secCounter (.up(pri_max), .rst(reset), .count(count), .at_max()); //pulse counter - output goes to SSEG display
-endmodule
-
 module top(
     input [15:0]sw,
-    input BTNC,
+    input BTNC, btnU,
     input CLK,
     output reg [15:0]led, 
     output [3:0]an,
     output [7:0]segs //there are actually 8 cathodes. one is disabled (decimal pt.)
     );
+    
     parameter Max_Timer = 80000000;
     wire [15:0]count[8:0]; //9 different 16 bit counts
     reg reset_timer;
     reg [5:0]challenge;
-    int RO_sel;
     
+    //main control loop for ROs
+    //wait for challenge update or reset button, then reset timers
     always @(posedge CLK, posedge BTNC) begin
         if (challenge != {sw[5:3],sw[2:0]}) begin
             challenge = {sw[5:3],sw[2:0]};
@@ -80,22 +67,55 @@ module top(
         led[7] = count[7]>count[8];
     end
     
-    assign led[14] = timer_max; //light led 14 when done
-    
-    assign RO_sel = 4*sw[11] + 2*sw[10] + sw[9]; //make switches 9->11 act as a RO count display select
-    assign led[11] = sw[11];
-    assign led[10] = sw[10];
-    assign led[9] = sw[9];
+    assign led[14] = timer_max; //light led 14 when done with RO count
+        
+//-------
+// SHA128 stuff
+//-------
 
-       
+    //  sha128_simple ( (ins) CLK, DATA_IN[15:0], RESET, START, 
+    //                  (outs)READY, DATA_OUT[127:0]);
+    
+    reg [127:0]hash;
+    wire hash_ready;
+    reg [15:0]sseg;
+    sha128_simple hash_slinging_slasher(.CLK(CLK), .DATA_IN({challenge,led[7:0]}), .RESET(!timer_max), .START(timer_max), .READY(hash_ready), .DATA_OUT(hash));
+
+    assign led[15] = hash_ready;
+   
 //--------------
 // SSEG Stuff
 //--------------
+
+    // based on sw[15:12], display different things to sseg
+    always @(*) begin
+        case({sw[15],sw[14],sw[13],sw[12]})
+            4'd0: sseg = {challenge,led[7:0]};
+            4'd1: sseg = hash[15:0];
+            4'd2: sseg = hash[31:16];
+            4'd3: sseg = hash[47:32];
+            4'd4: sseg = hash[63:48];
+            4'd5: sseg = hash[79:64];
+            4'd6: sseg = hash[95:80];
+            4'd7: sseg = hash[111:96];
+            4'd8: sseg = hash[127:112];
+            default: sseg = 16'd0;
+        endcase
+    end
+    
+    //make switches 9->11 act as a RO select, and display their count display when btnU is pressed (mainly for debug, to see margin of error on RO counter)
+    int RO_sel;
+    assign RO_sel = {sw[11],sw[10],sw[9]}; 
+    assign led[11] = sw[11];
+    assign led[10] = sw[10];
+    assign led[9] = sw[9];
+    
     sseg_des my_new_sseg (
-        .COUNT( sw[15] ? {challenge,led[7:0]} : count[RO_sel] ),
+        .COUNT( btnU ? count[RO_sel] : sseg),
         .CLK(CLK),
         .VALID(1),
         .DISP_EN({an[0],an[1],an[2],an[3]}),
         .SEGMENTS(segs[7:1]) //IGNORE SEG[0] DECIMAL POINT        
     );
+    
 endmodule

@@ -15,6 +15,48 @@
 // Revision 0.01 - File Created
 // Additional Comments:
 //////////////////////////////////////////////////////////////////////////////////
+module RO_withCounter (input enable, reset, [2:0]sel, [2:0]bx, output [15:0] count);
+    //we put the counter inside the RO module, to simplify the controls design outside the module
+    //a shortcut, yes, but a worthy one
+    
+    parameter Max_PRI = 4096; //increase to reduce sensitivity and jitters - this seems to be ok, but we have not tested different temperatures
+    parameter Max_SSEG = 16'hFFFF; //hard max, if you want to display the count on the SSEG. could be lower, but why?
+    
+    // at  bx = sel = 0, and 150k x 5k cycles, it takes 5.5 seconds to toggle LED - this puts RO frequency at ~135 MHz
+    RO_configurable RO(enable, sel, bx, osc);
+    
+    //RO testRO(sw[15], osc); //old simple RO. for loserz only 
+    counter #(.max(Max_PRI)) priCounter (.up(osc), .rst(reset), .at_max(pri_max)); //initial clock divider - higher numbers will "smooth out" jitters, while lower numbers will increase sensitivity to RO differences
+    counter #(.max(Max_SSEG)) secCounter (.up(pri_max), .rst(reset), .count(count), .at_max()); //pulse counter - output goes to SSEG display
+endmodule
+
+module RO_configurable(
+    input enable, [2:0]sel, [2:0]bx,
+    output flipper
+    );
+    
+    wire out[2:0], outL[2:0];
+    reg en_NL, en_L;
+    
+    RO_slice slice0(en_NL, en_L, sel[0], bx[0], out[0], outL[0]);
+    RO_slice slice1(out[0], outL[0], sel[1], bx[1], out[1], outL[1]);
+    RO_slice slice2(out[1], outL[1], sel[2], bx[2], out[2], outL[2]);
+    
+//    m21 mux_enable1 (en_NL, 1'b0, out[2], enable);
+//    m21 mux_enable2 (en_L, 1'b0, outL[2], enable);
+    
+    always_comb begin
+        case (enable)
+        1: begin en_NL = out[2]; en_L = outL[2]; end
+        0: begin en_NL = 0; en_L = 0;end
+        endcase
+    end
+    
+    
+    assign flipper = out[1];
+    
+endmodule
+
 module RO_slice(
     input in_noLatch, in_Latch,
     input sel, bx,
@@ -57,65 +99,4 @@ module RO_slice(
     
 endmodule
 
-//module delay_latch(y,x);
-//    (*dont_touch = "yes"*) output reg y;
-//    (*dont_touch = "yes"*) input x;
-    
-//        always@(*) begin
-//            y = x;
-//        end
-//endmodule
-    
-    
-//module m21(Y, D0, D1, S);
-//    //out, 0 input, 1 input, select
-//    output Y;
-//    input D0, D1, S;
-//    wire T1, T2, Sbar;
-    
-//    and (T1, D1, S), (T2, D0, Sbar);
-//    not (Sbar, S);
-//    or (Y, T1, T2);
-//endmodule
 
-//module m21(Y, D0, D1, S);
-//    //out, 0 input, 1 input, select
-//    output reg Y;
-//    input D0, D1, S;
-
-//    always @(S) begin
-//        case (S)
-//            0: Y = D0;
-//            1: Y = D1;
-//        endcase
-//    end
-    
-//endmodule
-
-
-module RO_configurable(
-    input enable, [2:0]sel, [2:0]bx,
-    output flipper
-    );
-    
-    wire out[2:0], outL[2:0];
-    reg en_NL, en_L;
-    
-    RO_slice slice0(en_NL, en_L, sel[0], bx[0], out[0], outL[0]);
-    RO_slice slice1(out[0], outL[0], sel[1], bx[1], out[1], outL[1]);
-    RO_slice slice2(out[1], outL[1], sel[2], bx[2], out[2], outL[2]);
-    
-//    m21 mux_enable1 (en_NL, 1'b0, out[2], enable);
-//    m21 mux_enable2 (en_L, 1'b0, outL[2], enable);
-    
-    always_comb begin
-        case (enable)
-        1: begin en_NL = out[2]; en_L = outL[2]; end
-        0: begin en_NL = 0; en_L = 0;end
-        endcase
-    end
-    
-    
-    assign flipper = out[1];
-    
-endmodule
