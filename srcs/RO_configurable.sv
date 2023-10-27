@@ -19,7 +19,7 @@ module RO_withCounter (input enable, reset, [2:0]sel, [2:0]bx, output [15:0] cou
     //we put the counter inside the RO module, to simplify the controls design outside the module
     //a shortcut, yes, but a worthy one
     
-    parameter Max_PRI = 4096; //increase to reduce sensitivity and jitters - this seems to be ok, but we have not tested different temperatures
+    parameter Max_PRI = 3096; //increase to reduce sensitivity and jitters - this seems to be ok, but we have not tested different temperatures
     parameter Max_SSEG = 16'hFFFF; //hard max, if you want to display the count on the SSEG. could be lower, but why?
     
     // at  bx = sel = 0, and 150k x 5k cycles, it takes 5.5 seconds to toggle LED - this puts RO frequency at ~135 MHz
